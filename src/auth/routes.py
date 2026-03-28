@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from .schemas import UserCreateModel, UserModel
+from fastapi.responses import JSONResponse
+from .schemas import UserCreateModel, UserModel, UserLoginModel
 from .service import UserService
 from src.db.main import get_session
 from sqlalchemy.ext.asyncio.session import AsyncSession
+from datetime import timedelta
+from . utils import create_access_token, decode_token, verify_password
+
+REFRESH_TOKEN_EXPIRY = timedelta(days=7)
 
 auth_router = APIRouter()
 user_service = UserService()
@@ -22,4 +27,47 @@ async def signup(user_data: UserCreateModel, session: AsyncSession = Depends(get
     new_user = await user_service.create_user(user_data=user_data, session=session)
 
     return new_user
+
+@auth_router.post('/login')
+async def login(login_data: UserLoginModel, session: AsyncSession = Depends(get_session)):
+    email = login_data.email    
+    password = login_data.password
+
+    user = await user_service.get_user_by_email(email=email, session=session) 
+
+    if user is not None:
+        password_valid = verify_password(password, user.password_hash)
+        if password_valid:
+            access_token = create_access_token(
+                user_data={
+                    "email": user.email,
+                    "user_uid": str(user.uid),
+                }
+            )
+
+            refresh_token = create_access_token(
+                user_data={
+                    "email": user.email,
+                    "user_uid": str(user.uid),
+                },
+                expiry=REFRESH_TOKEN_EXPIRY,
+                refresh=True,
+            )
+
+            return JSONResponse(
+                content={
+                    "message": "Login successful",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "user": {
+                        "email": user.email,
+                        "uid": str(user.uid),
+                    }
+                }
+            )
+    
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid email or password"
+    )
 
