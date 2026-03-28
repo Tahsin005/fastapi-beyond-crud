@@ -6,6 +6,8 @@ from src.db.main import get_session
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from datetime import timedelta
 from . utils import create_access_token, decode_token, verify_password
+from . dependencies import RefreshTokenBearer
+from datetime import datetime
 
 REFRESH_TOKEN_EXPIRY = timedelta(days=7)
 
@@ -69,5 +71,23 @@ async def login(login_data: UserLoginModel, session: AsyncSession = Depends(get_
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid email or password"
+    )
+
+@auth_router.post('/refresh-token')
+async def refresh_token(token_details: dict = Depends(RefreshTokenBearer())):
+    expiry_timestamp = token_details['exp']
+    if datetime.fromtimestamp(expiry_timestamp) > datetime.now():
+        new_access_token = create_access_token(
+            user_data=token_details['user']
+        )
+
+        return JSONResponse(
+            content={
+                "access_token": new_access_token,
+            }
+        )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Refresh token has expired, please log in again"
     )
 
