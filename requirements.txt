@@ -1,7 +1,9 @@
+aioredis==2.0.1
 alembic==1.18.4
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
+async-timeout==5.0.1
 asyncpg==0.31.0
 bcrypt==4.0.1
 certifi==2026.2.25
@@ -29,6 +31,7 @@ pydantic-extra-types==2.11.1
 pydantic-settings==2.13.1
 pydantic_core==2.41.5
 Pygments==2.19.2
+PyJWT==2.12.1
 python-dotenv==1.2.2
 python-multipart==0.0.22
 PyYAML==6.0.3

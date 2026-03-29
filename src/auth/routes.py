@@ -6,8 +6,9 @@ from src.db.main import get_session
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from datetime import timedelta
 from . utils import create_access_token, decode_token, verify_password
-from . dependencies import RefreshTokenBearer
+from . dependencies import RefreshTokenBearer, AccessTokenBearer
 from datetime import datetime
+from src.db.redis import is_jti_blocklisted, add_jti_to_blacklist
 
 REFRESH_TOKEN_EXPIRY = timedelta(days=7)
 
@@ -91,3 +92,13 @@ async def refresh_token(token_details: dict = Depends(RefreshTokenBearer())):
         detail="Refresh token has expired, please log in again"
     )
 
+
+@auth_router.get('/logout')
+async def logout(token_details: dict = Depends(AccessTokenBearer())):
+    jti = token_details['jti']
+    await add_jti_to_blacklist(jti)
+    return JSONResponse(
+        content={
+            "message": "Logout successful"
+        }
+    )
