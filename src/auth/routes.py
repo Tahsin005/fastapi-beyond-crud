@@ -8,7 +8,8 @@ from datetime import timedelta
 from . utils import create_access_token, decode_token, verify_password
 from . dependencies import RefreshTokenBearer, AccessTokenBearer
 from datetime import datetime
-from src.db.redis import is_jti_blocklisted, add_jti_to_blacklist
+from src.db.redis import add_jti_to_blacklist
+from . dependencies import get_current_user
 
 REFRESH_TOKEN_EXPIRY = timedelta(days=7)
 
@@ -45,6 +46,7 @@ async def login(login_data: UserLoginModel, session: AsyncSession = Depends(get_
                 user_data={
                     "email": user.email,
                     "user_uid": str(user.uid),
+                    "role": user.role,
                 }
             )
 
@@ -52,6 +54,7 @@ async def login(login_data: UserLoginModel, session: AsyncSession = Depends(get_
                 user_data={
                     "email": user.email,
                     "user_uid": str(user.uid),
+                    "role": user.role,
                 },
                 expiry=REFRESH_TOKEN_EXPIRY,
                 refresh=True,
@@ -91,6 +94,10 @@ async def refresh_token(token_details: dict = Depends(RefreshTokenBearer())):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Refresh token has expired, please log in again"
     )
+
+@auth_router.get('/me')
+async def get_current_user(user = Depends(get_current_user)):
+    return user
 
 
 @auth_router.get('/logout')
