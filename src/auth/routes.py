@@ -6,15 +6,15 @@ from src.db.main import get_session
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from datetime import timedelta
 from . utils import create_access_token, decode_token, verify_password
-from . dependencies import RefreshTokenBearer, AccessTokenBearer
+from . dependencies import RefreshTokenBearer, AccessTokenBearer, RoleChecker, get_current_user
 from datetime import datetime
 from src.db.redis import add_jti_to_blacklist
-from . dependencies import get_current_user
 
 REFRESH_TOKEN_EXPIRY = timedelta(days=7)
 
 auth_router = APIRouter()
 user_service = UserService()
+role_checker = RoleChecker(["admin", "user"])
 
 @auth_router.post('/signup', status_code=status.HTTP_201_CREATED, response_model=UserModel)
 async def signup(user_data: UserCreateModel, session: AsyncSession = Depends(get_session)):
@@ -96,7 +96,7 @@ async def refresh_token(token_details: dict = Depends(RefreshTokenBearer())):
     )
 
 @auth_router.get('/me')
-async def get_current_user(user = Depends(get_current_user)):
+async def get_current_user(user = Depends(get_current_user), _: bool = Depends(role_checker)):
     return user
 
 
