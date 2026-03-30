@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 import uuid
+from typing import List
+from src.books.schemas import BookModel
 from datetime import datetime
 
 class UserModel(BaseModel):
@@ -14,6 +16,7 @@ class UserModel(BaseModel):
     )
     created_at: datetime
     updated_at: datetime
+    books: List[BookModel]
 
 class UserCreateModel(BaseModel):
     first_name: str = Field(
