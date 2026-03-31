@@ -16,6 +16,8 @@ class UserModel(BaseModel):
     )
     created_at: datetime
     updated_at: datetime
+
+class UserBooksModel(UserModel):
     books: List[BookModel]
 
 class UserCreateModel(BaseModel):

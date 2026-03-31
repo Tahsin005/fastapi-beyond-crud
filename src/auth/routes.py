@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from .schemas import UserCreateModel, UserModel, UserLoginModel
+from .schemas import UserCreateModel, UserModel, UserLoginModel, UserBooksModel
 from .service import UserService
 from src.db.main import get_session
 from sqlalchemy.ext.asyncio.session import AsyncSession
@@ -95,7 +95,7 @@ async def refresh_token(token_details: dict = Depends(RefreshTokenBearer())):
         detail="Refresh token has expired, please log in again"
     )
 
-@auth_router.get('/me', response_model=UserModel)
+@auth_router.get('/me', response_model=UserBooksModel)
 async def get_current_user(user = Depends(get_current_user), _: bool = Depends(role_checker)):
     return user
 
