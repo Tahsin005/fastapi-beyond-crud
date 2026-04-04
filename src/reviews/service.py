@@ -3,6 +3,7 @@ from src.auth.service import UserService
 from src.books.service import BookService
 from src.reviews.schemas import ReviewCreateModel
 from fastapi import HTTPException, status
+from sqlmodel import select, desc
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
@@ -47,3 +48,9 @@ class ReviewService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=str(e)
             )
+        
+    async def get_review(self, review_uid: str, session: AsyncSession):
+        statement = select(Review).where(Review.uid == review_uid)
+        result = await session.execute(statement)
+        review = result.scalar_one_or_none()
+        return review
