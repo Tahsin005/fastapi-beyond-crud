@@ -61,3 +61,20 @@ class ReviewService:
         result = await session.exec(statement)
 
         return result.all()
+    
+    async def delete_review_of_a_book(
+        self, review_uid: str, user_email: str, session: AsyncSession
+    ):
+        user = await user_service.get_user_by_email(user_email, session)
+
+        review = await self.get_review(review_uid, session)
+
+        if not review or (review.user != user):
+            raise HTTPException(
+                detail="Cannot delete this review",
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
+
+        session.delete(review)
+
+        await session.commit()
