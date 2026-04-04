@@ -34,3 +34,9 @@ async def get_review(review_uid: str, session: AsyncSession = Depends(get_sessio
 
     if not book:
         raise
+
+@review_router.get("/", dependencies=[admin_role_checker])
+async def get_all_reviews(session: AsyncSession = Depends(get_session)):
+    books = await review_service.get_all_reviews(session)
+
+    return books

@@ -54,3 +54,10 @@ class ReviewService:
         result = await session.execute(statement)
         review = result.scalar_one_or_none()
         return review
+    
+    async def get_all_reviews(self, session: AsyncSession):
+        statement = select(Review).order_by(desc(Review.created_at))
+
+        result = await session.exec(statement)
+
+        return result.all()
