@@ -12,7 +12,7 @@ class ReviewModel(BaseModel):
     user_uid: Optional[uuid.UUID]
     book_uid: Optional[uuid.UUID]
     created_at: datetime
-    update_at: datetime
+    updated_at: datetime
 
 
 class ReviewCreateModel(BaseModel):
